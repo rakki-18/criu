@@ -95,11 +95,52 @@ test_stream() {
 	./test/zdtm.py run --stream -p 2 --keep-going -T "$STREAM_TEST_PATTERN" $ZDTM_OPTS
 }
 
+print_header() {
+	echo "############### $1 ###############"
+}
+
+print_env() {
+	# As this script can run on multiple different CI systems
+	# the following lines should give some context to the
+	# evnvironment of this CI run.
+	print_header "Environment variables"
+	printenv
+	print_header "uname -a"
+	uname -a || :
+	print_header "Mounted file systems"
+	mount || :
+	print_header "Kernel command line"
+	cat /proc/cmdline || :
+	print_header "Distribution information"
+	[ -e /etc/lsb-release ] && cat /etc/lsb-release
+	[ -e /etc/redhat-release ] && cat /etc/redhat-release
+	[ -e /etc/alpine-release ] && cat /etc/alpine-release
+	print_header "ulimit -a"
+	ulimit -a
+	print_header "Available memory"
+	if [ -e /etc/alpine-release ]; then
+		# Alpine's busybox based free does not understand -h
+		free
+	else
+		free -h
+	fi
+	print_header "Available CPUs"
+	lscpu || :
+}
+
+print_env
+
 ci_prep
 
-export GCOV
+if [ "$CLANG" = "1" ]; then
+	# Needed for clang on Circle CI
+	LDFLAGS="$LDFLAGS -Wl,-z,now"
+	export LDFLAGS
+fi
+
+export GCOV CC
 $CC --version
-time make CC="$CC" -j4
+time make CC="$CC" -j4 V=1
 
 ./criu/criu -v4 cpuinfo dump || :
 ./criu/criu -v4 cpuinfo check || :
@@ -142,7 +183,7 @@ if [ "${COMPAT_TEST}x" = "yx" ] ; then
 	mv "$REFUGE"/* /usr/lib/x86_64-linux-gnu/
 fi
 
-time make CC="$CC" -j4 -C test/zdtm
+time make CC="$CC" -j4 -C test/zdtm V=1
 
 [ -f "$CCACHE_LOGFILE" ] && cat "$CCACHE_LOGFILE"
 
@@ -204,7 +245,7 @@ if [ -z "$SKIP_EXT_DEV_TEST" ]; then
 fi
 #make -C test/others/exec/ run
 make -C test/others/make/ run CC="$CC"
-if [ -n "$TRAVIS" ]; then
+if [ -n "$TRAVIS" ] || [ -n "$CIRCLECI" ]; then
        # GitHub Actions does not provide a real TTY and CRIU will fail with:
        # Error (criu/tty.c:1014): tty: Don't have tty to inherit session from, aborting
        make -C test/others/shell-job/ run
