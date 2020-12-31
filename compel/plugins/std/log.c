@@ -16,6 +16,7 @@ struct simple_buf {
 static int logfd = -1;
 static int cur_loglevel = COMPEL_DEFAULT_LOGLEVEL;
 static struct timeval start;
+static struct timeval previous_log_time;
 static gettimeofday_t __std_gettimeofday;
 
 static void sbuf_log_flush(struct simple_buf *b);
@@ -54,9 +55,13 @@ static void sbuf_log_init(struct simple_buf *b)
 
 	if (start.tv_sec != 0) {
 		struct timeval now;
+		/* temporary variable to store now*/
+		struct timeval temp; 
 
 		std_gettimeofday(&now, NULL);
-		timediff(&start, &now);
+		temp = now;
+		timediff(&previous_log_time, &now);
+		previous_log_time = temp;
 
 		/* Seconds */
 		n = std_vprint_num(pbuf, sizeof(pbuf), (unsigned)now.tv_sec, &s);
@@ -129,6 +134,7 @@ void std_log_set_loglevel(enum __compel_log_levels level)
 void std_log_set_start(struct timeval *s)
 {
 	start = *s;
+	previous_log_time = *s;
 }
 
 void std_log_set_gettimeofday(gettimeofday_t gtod)

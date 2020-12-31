@@ -49,6 +49,7 @@ static unsigned int early_log_buf_off = 0;
 static int init_done = 0;
 
 static struct timeval start;
+static struct timeval previous_log_time;
 /*
  * Manual buf len as sprintf will _always_ put '\0' at the end,
  * but we want a "constant" pid to be there on restore
@@ -69,9 +70,13 @@ static void timediff(struct timeval *from, struct timeval *to)
 static void print_ts(void)
 {
 	struct timeval t;
+	/*temporary variable to store t*/
+	struct timeval temp; 
 
 	gettimeofday(&t, NULL);
-	timediff(&start, &t);
+	temp = t;
+	timediff(&previous_log_time, &t);
+	previous_log_time = temp;
 	snprintf(buffer, TS_BUF_OFF,
 			"(%02u.%06u)", (unsigned)t.tv_sec, (unsigned)t.tv_usec);
 	buffer[TS_BUF_OFF - 1] = ' '; /* kill the '\0' produced by snprintf */
@@ -210,6 +215,7 @@ int log_init(const char *output)
 	int new_logfd, fd;
 
 	gettimeofday(&start, NULL);
+	gettimeofday(&previous_log_time, NULL);
 	reset_buf_off();
 
 	if (output && !strncmp(output, "-", 2)) {
