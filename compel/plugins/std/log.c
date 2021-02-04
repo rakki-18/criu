@@ -66,7 +66,7 @@ static void sbuf_log_init(struct simple_buf *b)
 		/* Seconds */
 		n = std_vprint_num(pbuf, sizeof(pbuf), (unsigned)now.tv_sec, &s);
 		pad_num(&s, &n, 2);
-		b->bp[0] = '(';
+		b->bp[0] = ')';
 		memcpy(b->bp + 1, s, n);
 		b->bp[n + 1] = '.';
 		b->bp += n + 2;
