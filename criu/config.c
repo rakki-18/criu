@@ -480,6 +480,8 @@ int parse_options(int argc, char **argv, bool *usage_error,
 		{ "close",			required_argument,	0, 1043	},
 		BOOL_OPT("log-pid", &opts.log_file_per_pid),
 		{ "version",			no_argument,		0, 'V'	},
+		BOOL_OPT("relative-timestamps", &opts.relative_timestamps),
+		{ "timestamps",			no_argument,		0, 'T'	},
 		BOOL_OPT("evasive-devices", &opts.evasive_devices),
 		{ "pidfile",			required_argument,	0, 1046	},
 		{ "veth-pair",			required_argument,	0, 1047	},
@@ -875,6 +877,9 @@ int parse_options(int argc, char **argv, bool *usage_error,
 			if (strcmp(CRIU_GITID, "0"))
 				pr_msg("GitID: %s\n", CRIU_GITID);
 			exit(0);
+		case 'T':
+			opts.relative_timestamps = true;
+			break;
 		case 'h':
 			*usage_error = false;
 			return 2;

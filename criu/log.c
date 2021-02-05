@@ -69,9 +69,19 @@ static void timediff(struct timeval *from, struct timeval *to)
 static void print_ts(void)
 {
 	struct timeval t;
-
+	/* temporary variable to store t*/
+	struct timeval temp;
+	
 	gettimeofday(&t, NULL);
+	
+	if(opts.relative_timestamps)
+		temp = t;
+	
 	timediff(&start, &t);
+
+	if(opts.relative_timestamps)
+		start = temp;	
+	
 	snprintf(buffer, TS_BUF_OFF,
 			"(%02u.%06u)", (unsigned)t.tv_sec, (unsigned)t.tv_usec);
 	buffer[TS_BUF_OFF - 1] = ' '; /* kill the '\0' produced by snprintf */

@@ -5,6 +5,7 @@
 #include <compel/plugins/std/string.h>
 #include <compel/plugins/std/log.h>
 #include <compel/loglevels.h>
+#include "piegen.h"
 
 struct simple_buf {
 	char buf[STD_LOG_SIMPLE_CHUNK];
@@ -54,9 +55,16 @@ static void sbuf_log_init(struct simple_buf *b)
 
 	if (start.tv_sec != 0) {
 		struct timeval now;
+		/* temporary variable to store now */
+		struct timeval temp;
 
 		std_gettimeofday(&now, NULL);
+
+		if(opts.relative_timestamps)
+			temp = now;
 		timediff(&start, &now);
+		if(opts.relative_timestamps)
+			start = temp;
 
 		/* Seconds */
 		n = std_vprint_num(pbuf, sizeof(pbuf), (unsigned)now.tv_sec, &s);

@@ -315,6 +315,7 @@ int main(int argc, char *argv[])
 		{ "help",	no_argument,		0, 'h' },
 		{ "version",	no_argument,		0, 'V' },
 		{ "log-level",	required_argument,	0, 'l' },
+		{ "relative-timestamps", no_argument,	0, 'T'},
 		{ },
 	};
 
@@ -352,6 +353,9 @@ int main(int argc, char *argv[])
 			       COMPEL_SO_VERSION_MINOR,
 			       COMPEL_SO_VERSION_SUBLEVEL);
 			exit(0);
+			break;
+		case 'T':
+			opts.relative_timestamps = true;
 			break;
 		default: // '?'
 			// error message already printed by getopt_long()
