@@ -281,6 +281,7 @@ void init_opts(void)
 	opts.log_level = DEFAULT_LOGLEVEL;
 	opts.pre_dump_mode = PRE_DUMP_SPLICE;
 	opts.file_validation_method = FILE_VALIDATION_DEFAULT;
+	opts.relative_timestamps = 0;
 }
 
 bool deprecated_ok(char *what)
@@ -481,7 +482,6 @@ int parse_options(int argc, char **argv, bool *usage_error,
 		BOOL_OPT("log-pid", &opts.log_file_per_pid),
 		{ "version",			no_argument,		0, 'V'	},
 		BOOL_OPT("relative-timestamps", &opts.relative_timestamps),
-		{ "timestamps",			no_argument,		0, 'T'	},
 		BOOL_OPT("evasive-devices", &opts.evasive_devices),
 		{ "pidfile",			required_argument,	0, 1046	},
 		{ "veth-pair",			required_argument,	0, 1047	},

@@ -5,7 +5,6 @@
 #include <compel/plugins/std/string.h>
 #include <compel/plugins/std/log.h>
 #include <compel/loglevels.h>
-#include "piegen.h"
 
 struct simple_buf {
 	char buf[STD_LOG_SIMPLE_CHUNK];
@@ -16,6 +15,7 @@ struct simple_buf {
 
 static int logfd = -1;
 static int cur_loglevel = COMPEL_DEFAULT_LOGLEVEL;
+static int relative_timestamps = COMPEL_DEFAULT_RELATIVETIMESTAMPS;
 static struct timeval start;
 static gettimeofday_t __std_gettimeofday;
 
@@ -41,6 +41,10 @@ static inline void pad_num(char **s, int *n, int nr)
 	}
 }
 
+void std_log_set_relativetimestamps(enum __compel_relative_timestamps timestamps)
+{
+	relative_timestamps = timestamps;
+}
 static void sbuf_log_init(struct simple_buf *b)
 {
 	char pbuf[12], *s;
@@ -60,10 +64,10 @@ static void sbuf_log_init(struct simple_buf *b)
 
 		std_gettimeofday(&now, NULL);
 
-		if(opts.relative_timestamps)
+		if(relative_timestamps)
 			temp = now;
 		timediff(&start, &now);
-		if(opts.relative_timestamps)
+		if(relative_timestamps)
 			start = temp;
 
 		/* Seconds */

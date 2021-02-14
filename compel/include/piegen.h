@@ -12,7 +12,6 @@ typedef struct {
 	char		*input_filename;
 	char		*output_filename;
 	char		*prefix;
-	int		 relative_timestamps;
 	FILE		*fout;
 } piegen_opt_t;
 

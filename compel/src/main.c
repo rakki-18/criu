@@ -304,6 +304,7 @@ int main(int argc, char *argv[])
 	bool is_static = false;
 	int opt, idx;
 	char *action;
+	int relative_timestamps = COMPEL_DEFAULT_RELATIVETIMESTAMPS;
 
 	static const char short_opts[] = "csf:o:p:hVl:";
 	static struct option long_opts[] = {
@@ -355,7 +356,7 @@ int main(int argc, char *argv[])
 			exit(0);
 			break;
 		case 'T':
-			opts.relative_timestamps = true;
+			relative_timestamps = 1;
 			break;
 		default: // '?'
 			// error message already printed by getopt_long()
@@ -414,6 +415,7 @@ int main(int argc, char *argv[])
 			}
 		}
 		compel_log_init(&cli_log, log_level);
+		compel_relativetimestamps_init(&cli_log,relative_timestamps);
 		return piegen();
 	}
 
