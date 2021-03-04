@@ -1,10 +1,12 @@
 #include <stdarg.h>
 
+#include "common/rst-malloc.h"
 #include "common/bitsperlong.h"
 #include <compel/plugins/std/syscall.h>
 #include <compel/plugins/std/string.h>
 #include <compel/plugins/std/log.h>
 #include <compel/loglevels.h>
+#include "common/lock.h"
 
 struct simple_buf {
 	char buf[STD_LOG_SIMPLE_CHUNK];
@@ -18,6 +20,7 @@ static int cur_loglevel = COMPEL_DEFAULT_LOGLEVEL;
 static int relative_timestamps = COMPEL_DEFAULT_RELATIVETIMESTAMPS;
 static struct timeval start;
 static gettimeofday_t __std_gettimeofday;
+static mutex_t *relative_timestamps_mutex;
 
 static void sbuf_log_flush(struct simple_buf *b);
 
@@ -39,6 +42,16 @@ static inline void pad_num(char **s, int *n, int nr)
 		(*n)++;
 		**s = '0';
 	}
+}
+
+static int prepare_relativetimestamps_mutex(void)
+{
+	relative_timestamps_mutex = shmalloc(sizeof(mutex_t));
+	if(!relative_timestamps_mutex)
+		return -1;
+
+	mutex_init(relative_timestamps_mutex);
+	return 0;
 }
 
 void std_log_set_relativetimestamps(enum __compel_relative_timestamps timestamps)
@@ -65,6 +78,8 @@ static void sbuf_log_init(struct simple_buf *b)
 
 		std_gettimeofday(&now, NULL);
 
+		prepare_relativetimestamps_mutex();
+		mutex_lock(relative_timestamps_mutex);
 		if(relative_timestamps)
 			temp = now;
 
@@ -72,6 +87,8 @@ static void sbuf_log_init(struct simple_buf *b)
 
 		if(relative_timestamps)
 			start = temp;
+
+		mutex_unlock(relative_timestamps_mutex);
 
 		/* Seconds */
 		n = std_vprint_num(pbuf, sizeof(pbuf), (unsigned)now.tv_sec, &s);
